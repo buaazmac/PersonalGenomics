@@ -65,16 +65,77 @@ class ImageScale:
 					+ (py - float(y1)) / (float(y2) - float(y1)) * f_x_y2
 				col.append(f_x_y)
 			result.append(col)
-		return result
+		return np.array(result)
+	# Linear Interpolation for 1D data
+	def linearInterpolation(self, new_width, new_height, background_v = 0):
+		x_ratio = float(self.width - 1) / float(new_width - 1)
+		result = []
+		for i in range(new_width):
+			col = []
+			for j in range(new_height):
+				px = float(i * x_ratio)
+
+				x1 = int(px)
+				x2 = x1 + 1
+				
+				if x2 >= self.width:
+					x2 = self.width - 1
+					x1 = x2 - 1
+
+				q1 = float(self.matrix[x1][j])
+				q2 = float(self.matrix[x2][j])
+				fx1 = (px - x1) / (x2 - x1)
+				val = q1 * (1.0 - fx1) + q2 * fx1
+				col.append(val)
+			result.append(col)
+		return np.array(result)
+	# Cubic Interpolation for 1D data
+	def cubicInterpolation(self, new_width, new_height, background_v = 0):
+		x_ratio = float(self.width - 1) / float(new_width - 1)
+		result = []
+		def h00(t):
+			return 2.0 * pow(t, 3) - 3.0 * pow(t, 2) + 1
+		def h10(t):
+			return pow(t, 3) - 2.0 * pow(t, 2) + t
+		def h01(t):
+			return -2.0 * pow(t, 3) + 3.0 * pow(t, 2)
+		def h11(t):
+			return pow(t, 3) - pow(t, 2)
+		for i in range(new_width):
+			col = []
+			for j in range(new_height):
+				px = float(i * x_ratio)
+
+				x1 = int(px)
+				x2 = x1 + 1
+				
+				if x2 >= self.width:
+					x2 = self.width - 1
+					x1 = x2 - 1
+
+				q1 = float(self.matrix[x1][j])
+				q2 = float(self.matrix[x2][j])
+				m1 = (q2 - q1)
+				m2 = 0
+				if x2 < self.width - 1:
+					m2 = float(self.matrix[x2+1][j]) - q2
+				t = px - float(x1)
+				val = h00(t) * q1 + h10(t) * m1 + h01(t) * q2 + h11(t) * m2
+
+				col.append(val)
+			result.append(col)
+		return np.array(result)
+		
 
 input_matrix = np.array([[1,1,0,0], [0,1,0,1], [1,0,0,0]])
 scale = ImageScale(input_matrix)
-print scale.nearestNeighbor(2,4)
-print '#'
-print scale.bilinearInterpolation(2,4)
-print '#'
-print scale.bilinearInterpolation(6,4)
-print '#'
-print scale.bilinearInterpolation(7,4)
+print "nearest neighbor"
+print scale.nearestNeighbor(4,4)
+print "bilinear interpolation"
+print scale.bilinearInterpolation(4,4)
+print "linear interpolation"
+print scale.linearInterpolation(4,4)
+print "cubic interpolation"
+print scale.cubicInterpolation(4,4)
 				
 		
