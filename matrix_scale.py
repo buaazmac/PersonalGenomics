@@ -115,10 +115,18 @@ class ImageScale:
 
 				q1 = float(self.matrix[x1][j])
 				q2 = float(self.matrix[x2][j])
-				m1 = (q2 - q1)
-				m2 = 0
+				x0 = x1 - 1
+				q0 = q1
+				x3 = x2 + 1
+				q3 = q2
+				if x1 > 0:
+					x0 = x1 - 1
+					q0 = float(self.matrix[x0][j])
 				if x2 < self.width - 1:
-					m2 = float(self.matrix[x2+1][j]) - q2
+					x3 = x2 + 1
+					q3 = float(self.matrix[x3][j])
+				m1 = 0.5 * ((q2 - q1) + (q1 - q0))
+				m2 = 0.5 * ((q3 - q2) + (q2 - q1))
 				t = px - float(x1)
 				val = h00(t) * q1 + h10(t) * m1 + h01(t) * q2 + h11(t) * m2
 
